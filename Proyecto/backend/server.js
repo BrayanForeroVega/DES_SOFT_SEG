@@ -17,7 +17,32 @@ const express = require('express');
    app.disable('x-powered-by');
    app.set('port', port);
    usersRoutes(app);
-   server.listen(3000, '192.168.40.81' || 'localhost', function(){
+
+   // Middlewares globales
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+
+// Rutas
+app.use('/api/users', usersRoutes);
+
+// Endpoints de prueba
+app.get('/', (req, res) => {
+  res.send('Ruta raíz del Backend');
+});
+
+app.get('/test', (req, res) => {
+  res.send('Ruta TEST');
+});
+
+// Manejo de errores
+app.use((err, req, res, next) => {
+  console.log(err);
+  res.status(err.status || 500).send(err.stack);
+});
+
+   server.listen(3000, '172.20.240.1' || 'localhost', function(){
      console.log('App node.js ' + process.pid + ' ejecutando en ' + server.address().address + ':' + server.address().port);
    });
    app.get('/', (req, res) => {
@@ -30,3 +55,6 @@ const express = require('express');
      console.log(err);
      res.status(err.status || 500).send(err.stack);
    });
+
+   // Exportamos la app para que la use index.js
+module.exports = app;

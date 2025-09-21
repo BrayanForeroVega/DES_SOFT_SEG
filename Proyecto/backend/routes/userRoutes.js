@@ -1,10 +1,15 @@
+const express = require('express');
+const router = express.Router();
 const userController = require('../controllers/userController');
-const passport = require('passport');
-module.exports = (app) => {
-     app.get('/api/users',  passport.authenticate('jwt', { session: false }),userController.getAllUsers);
-     app.get('/api/users/:id', passport.authenticate('jwt', { session: false }), userController.getUserById);
-     app.post('/api/users/create', passport.authenticate('jwt', { session: false }), userController.register); 
-     app.put('/api/users/update', passport.authenticate('jwt', { session: false }), userController.getUserUpdate);
-     app.delete('/api/users/delete/:id', passport.authenticate('jwt', { session: false }), userController.getUserDelete);
-     app.post('/api/users/login', userController.login);
-}
+const { verifyToken, authorizeRoles } = require('../middlewares/authMiddleware');
+
+router.post('/login', userController.login);
+router.post('/create', userController.register);
+
+// Rutas protegidas
+router.get('/', verifyToken, authorizeRoles(['admin', 'vendedor']), userController.getAllUsers);
+router.get('/:id', verifyToken, authorizeRoles(['admin', 'vendedor']), userController.getUserById);
+router.put('/:id', verifyToken, authorizeRoles(['admin', 'vendedor']), userController.getUserUpdate);
+router.delete('/delete/:id', verifyToken, authorizeRoles(['admin']), userController.getUserDelete);
+
+module.exports = router;
